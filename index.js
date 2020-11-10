@@ -50,3 +50,15 @@ app.get('/medicos/listarMedicos', function (req, res) {
 
     res.render('listarMedicos.hbs', { medicos });
 });
+
+// medicamentos /// medicamentos / medicamentos 
+
+app.get('/medicamentos/buscarMedicamento', function (req, res) {
+    res.render('medicamentos/buscarMedicamento.hbs');
+});
+app.get('/medicamentos/busquedaMedicamento', function (req, res) {
+    res.render('medicamentos/busquedaMedicamento.hbs');
+});
+app.get('/medicamentos/agregarMedicamento', function (req, res) {
+    res.render('medicamentos/agregarMedicamento.hbs');
+});
