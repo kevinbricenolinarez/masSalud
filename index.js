@@ -60,16 +60,44 @@ app.get('/clientes/agregarCliente', function (req, res) {
 // AGREGAR CLIENTES [POST]
 app.post('/clientes/agregarCliente', function (req, res) {
     connection.query("insert into PERSONA (RutPer, NomPer) values (" + req.body.rut + ", '" + req.body.nombre + "');", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Agregado el cliente");
         res.redirect('/clientes/listarClientes');
     })
 });
 
 // LISTAR CLIENTES [GET]
-app.get('/clientes/listarClientes', function (req, res) {
-    connection.query('SELECT * FROM Persona', function(error, clientes, fields) {
-        if (error) {throw error};
+app.get('/clientes/listarClientes/:sort', function (req, res) {
+
+    consulta = ''; 
+    
+    if (req.params.sort == "byList") {
+        consulta = 'SELECT * FROM Persona';
+    }
+    else if (req.params.sort == "byNomAZ") {
+        consulta = 'SELECT * FROM Persona ORDER BY NomPer ASC';
+    }
+    else if (req.params.sort == "byNomZA") {
+        consulta = 'SELECT * FROM Persona ORDER BY NomPer DESC';
+    }
+    else if (req.params.sort == "byRutAsc") {
+        consulta = 'SELECT * FROM Persona ORDER BY RutPer ASC';
+    }
+    else if (req.params.sort == "byRutDesc") {
+        consulta = 'SELECT * FROM Persona ORDER BY RutPer DESC';
+    }
+
+    connection.query(consulta, function(error, clientes, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("The solution is: ", clientes);
+        res.render('personas/clientes/listarClientes.hbs', { clientes });
+    })
+});
+
+// LISTAR CLIENTES [POST]
+app.post('/clientes/listarClientes', function (req, res) {
+    connection.query('SELECT * FROM Persona WHERE RutPer = "' + req.body.rut + '"', function(error, clientes, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", clientes);
         res.render('personas/clientes/listarClientes.hbs', { clientes });
     })
@@ -79,7 +107,7 @@ app.get('/clientes/listarClientes', function (req, res) {
 app.get('/clientes/editar/:RutPer', function(req, res) {
     let rutPersona = req.params.RutPer;
     connection.query('SELECT * FROM Persona WHERE RutPer = ' + rutPersona, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el cliente");
         clienteEncontrado = respuesta[0];
         res.render('personas/clientes/actualizarCliente.hbs', { rut: clienteEncontrado.RutPer, nombre: clienteEncontrado.NomPer });
@@ -89,7 +117,7 @@ app.get('/clientes/editar/:RutPer', function(req, res) {
 // ACTUALIZAR CLIENTE [POST]
 app.post('/clientes/editar', function (req, res) {
     connection.query("UPDATE PERSONA SET NomPer = '" + req.body.nombre + "' WHERE RutPer = " + req.body.rut + ";", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el cliente");
         res.redirect('/clientes/listarClientes');
     })
@@ -99,7 +127,7 @@ app.post('/clientes/editar', function (req, res) {
 app.get('/clientes/eliminar/:RutPer', function(req, res) {
     let rutPersona = req.params.RutPer;
     connection.query('DELETE FROM Persona WHERE RutPer = ' + rutPersona, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el cliente");
         res.redirect('/clientes/listarClientes');
     })
@@ -115,7 +143,7 @@ app.get('/quimicos/agregarQuimicoFarm', function (req, res) {
 // AGREGAR QUÍMICOS FARMACEUTICOS [POST]
 app.post('/quimicos/agregarQuimicoFarm', function (req, res) {
     connection.query("insert into QUIMICOFARMAC (RutQuimic, NomQuimic) values (" + req.body.RutQuimic + ", '" + req.body.NomQuimic + "');", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Agregado el químico");
         res.redirect('/quimicos/listarQuimicos');
     })
@@ -124,18 +152,17 @@ app.post('/quimicos/agregarQuimicoFarm', function (req, res) {
 // LISTAR QUÍMICOS FARMACEUTICOS [GET]
 app.get('/quimicos/listarQuimicos', function (req, res) {
     connection.query('SELECT * FROM QUIMICOFARMAC', function(error, quimicos, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", quimicos);
         res.render('personas/quimicos/listarQuimicos.hbs', { quimicos });
     })
 });
 
-
 // EDITAR QUIMICO FARM [GET]
 app.get('/quimicos/editar/:RutQuimic', function(req, res) {
     let rutQuimico = req.params.RutQuimic;
     connection.query('SELECT * FROM QUIMICOFARMAC WHERE RutQuimic = ' + rutQuimico, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el quimico");
         quimicoEncontrado = respuesta[0];
         res.render('personas/quimicos/actualizarQuimicoFarm.hbs', { RutQuimic: quimicoEncontrado.RutQuimic, NomQuimic: quimicoEncontrado.NomQuimic });
@@ -145,7 +172,7 @@ app.get('/quimicos/editar/:RutQuimic', function(req, res) {
 // ACTUALIZAR QUIMICOS FARMACEUTICOS [POST]
 app.post('/quimicos/editar', function (req, res) {
     connection.query("UPDATE QUIMICOFARMAC SET NomQuimic = '" + req.body.NomQuimic + "' WHERE RutQuimic = " + req.body.RutQuimic + ";", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el quimico");
         res.redirect('/quimicos/listarQuimicos');
     })
@@ -155,7 +182,7 @@ app.post('/quimicos/editar', function (req, res) {
 app.get('/quimicos/eliminar/:RutQuimic', function(req, res) {
     let rutQuimico = req.params.RutQuimic;
     connection.query('DELETE FROM QUIMICOFARMAC WHERE RutQuimic = ' + rutQuimico, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el químico");
         res.redirect('/quimicos/listarQuimicos');
     })
@@ -171,7 +198,7 @@ app.get('/medicos/agregarMedico', function (req, res) {
 //AGREGAR MEDICO [POST]
 app.post('/medicos/agregarMedico', function (req, res) {
     connection.query("insert into MEDICO (RutMed, NomMed_m, EspecMed) values (" + req.body.RutMed + ", '" + req.body.NomMed_m + "', '" + req.body.EspecMed + "');", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Agregado el medico");
         res.redirect('/medicos/listarMedicos');
     })
@@ -180,7 +207,7 @@ app.post('/medicos/agregarMedico', function (req, res) {
 // LISTAR MEDICOS [GET]
 app.get('/medicos/listarMedicos', function (req, res) {
     connection.query('SELECT * FROM Medico', function(error, medicos, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", medicos);
         res.render('personas/medicos/listarMedicos.hbs', { medicos });
     })
@@ -190,7 +217,7 @@ app.get('/medicos/listarMedicos', function (req, res) {
 app.get('/medicos/editar/:RutMed', function(req, res) {
     let rutMedico = req.params.RutMed;
     connection.query('SELECT * FROM Medico WHERE RutMed = ' + rutMedico, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el medico");
         medicoEncontrado = respuesta[0];
         res.render('personas/medicos/actualizarMedicos.hbs', { RutMed: medicoEncontrado.RutMed, NomMed_m: medicoEncontrado.NomMed_m, EspecMed: medicoEncontrado.EspecMed });
@@ -200,7 +227,7 @@ app.get('/medicos/editar/:RutMed', function(req, res) {
 // ACTUALIZAR MEDICO [POST]
 app.post('/medicos/editar', function (req, res) {
     connection.query("UPDATE MEDICO SET NomMed_m = '" + req.body.NomMed_m + "' , EspecMed= '" + req.body.EspecMed + "' WHERE RutMed = " + req.body.RutMed + ";" , function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el medico");
         res.redirect('/medicos/listarMedicos');
     })
@@ -211,7 +238,7 @@ app.post('/medicos/editar', function (req, res) {
 app.get('/medicos/eliminar/:RutMed', function(req, res) {
     let rutMedico = req.params.RutMed;
     connection.query('DELETE FROM Medico WHERE RutMed = ' + rutMedico, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el medico");
         res.redirect('/medicos/listarMedicos');
     })
@@ -249,7 +276,7 @@ app.get('/medicamentos/agregarMedicamento', function (req, res) {
 // AGREGAR MEDICAMENTO [POST]
 app.post('/medicamentos/agregarMedicamento', function (req, res) {
     connection.query("insert into MEDICAMENTO (IdMed, NomMed) values (" + req.body.IdMed + ", '" + req.body.NomMed + "');", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Agregado el medicamento");
         res.redirect('/medicamentos/listarMedicamentos');
     })
@@ -258,7 +285,7 @@ app.post('/medicamentos/agregarMedicamento', function (req, res) {
 // LISTAR MEDICAMENTOS [GET]
 app.get('/medicamentos/listarMedicamentos', function (req, res) {
     connection.query('SELECT * FROM Medicamento', function(error, medicamentos, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", medicamentos);
         res.render('medicamentos/listarMedicamentos.hbs', { medicamentos });
     })
@@ -269,7 +296,7 @@ app.get('/medicamentos/listarMedicamentos', function (req, res) {
 app.get('/medicamentos/editar/:IdMed', function(req, res) {
     let idMedicamento = req.params.IdMed;
     connection.query('SELECT * FROM Medicamento WHERE IdMed = ' + idMedicamento, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el cliente");
         medicamentoEncontrado = respuesta[0];
         res.render('medicamentos/actualizarMeds.hbs', { IdMed: medicamentoEncontrado.IdMed, NomMed: medicamentoEncontrado.NomMed });
@@ -280,7 +307,7 @@ app.get('/medicamentos/editar/:IdMed', function(req, res) {
 // ACTUALIZAR MEDICAMENTOS [POST]
 app.post('/medicamentos/editar', function (req, res) {
     connection.query("UPDATE MEDICAMENTO SET NomMed = '" + req.body.NomMed + "' WHERE IdMed = " + req.body.IdMed + ";", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el medicamentos");
         res.redirect('/medicamentos/listarMedicamentos');
     })
@@ -290,7 +317,7 @@ app.post('/medicamentos/editar', function (req, res) {
 app.get('/medicamentos/eliminar/:IdMed', function(req, res) {
     let idMeds = req.params.IdMed;
     connection.query('DELETE FROM Medicamento WHERE IdMed = ' + idMeds, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el medicamento");
         res.redirect('/medicamentos/listarMedicamentos');
     })
@@ -318,7 +345,7 @@ app.get('/proveedores/agregarProveedor', function (req, res) {
 //AGREGAR PROVEEDOR [POST]
 app.post('/proveedores/agregarProveedor', function(req, res) {
     connection.query("insert into PROVEEDOR (IdProv, NomLab) values ('" + req.body.IdProv + "', '" + req.body.NomLab + "');", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Agregado el nombre el proveedor:");
         res.redirect('/proveedores/listarProveedores');
     })
@@ -328,7 +355,7 @@ app.post('/proveedores/agregarProveedor', function(req, res) {
 // LISTAR PROVEEDORES [GET]
 app.get('/proveedores/listarProveedores', function(req, res) {
     connection.query('SELECT * FROM Proveedor', function(error, proveedores, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", proveedores);
         res.render('proveedores/listarProveedores.hbs', {proveedores});
     })
@@ -338,7 +365,7 @@ app.get('/proveedores/listarProveedores', function(req, res) {
 app.get('/proveedores/editar/:IdProv', function(req, res) {
     let idprov = req.params.IdProv;
     connection.query('SELECT * FROM Proveedor WHERE IdProv = ' + idprov, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el proveedor");
         provEncontrado = respuesta[0];
         res.render('proveedores/actualizarProveedor.hbs', { IdProv: provEncontrado.IdProv, NomLab: provEncontrado.NomLab });
@@ -348,7 +375,7 @@ app.get('/proveedores/editar/:IdProv', function(req, res) {
 // ACTUALIZAR PROVEEDOR [POST]
 app.post('/proveedores/editar', function (req, res) {
     connection.query("UPDATE PROVEEDOR SET NomLab = '" + req.body.NomLab + "' WHERE IdProv = " + req.body.IdProv + ";", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el proveedor");
         res.redirect('/proveedores/listarProveedores');
     })
@@ -358,16 +385,51 @@ app.post('/proveedores/editar', function (req, res) {
 app.get('/proveedores/eliminar/:IdProv', function(req, res) {
     let idProveedor = req.params.IdProv;
     connection.query('DELETE FROM Proveedor WHERE IdProv = ' + idProveedor, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el proveedor");
         res.redirect('/proveedores/listarProveedores');
     })
 })
 
-// STOCK
-app.get('/proveedores/stock', function(req, res) {
-    res.render('stock.hbs');
-})
+///////////////////////// STOCK
+//AGREGAR STOCK [GET]
+app.get('/proveedores/agregarStock', function (req, res) {
+    connection.query("SELECT * FROM FORMATO; SELECT * FROM PRESENTACION; SELECT * FROM PROVEEDOR; SELECT * FROM MEDICAMENTO; SELECT Cantidad FROM STOCK; SELECT * FROM LOTE", function(error, respuesta, fields) {  
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("Formatos encontrados:", respuesta)
+        
+        dataStock = {
+            formatos: respuesta[0],
+            presentaciones: respuesta[1],
+            proveedores: respuesta[2],
+            medicamentos: respuesta[3],
+            cantidad: respuesta[4],
+            lote: respuesta[5],
+        }
+        res.render('proveedores/agregarStock.hbs', { dataStock });  
+    })  
+});
+
+//CREAR LOTE
+
+//AGREGAR STOCK [POST]
+app.post('/proveedores/agregarStock', function (req, res) {
+    connection.query(`insert into LOTE (IdLote,IdProv_l) values('${req.body.IdLote_s}','${req.body.IdProv_s}' ); insert into STOCK (IdProv_s, IdMed_s, TipoPresentacion_s, TipoFormato_s,Cantidad, FechaLlegadaStock, IdLote_s) values ('${req.body.IdProv_s}', '${req.body.IdMed_s}',  '${req.body.TipoPresentacion_s}', '${req.body.TipoFormato_s}','${req.body.Cantidad}','${req.body.FechaLlegadaStock}','${req.body.IdLote_s}');`, function(error, respuesta, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("RESP:", respuesta);
+        console.log("Agregado el registro del stock");
+        res.redirect('/proveedores/listarStock');
+    })
+});
+
+
+//LISTAR STOCK [GET]
+app.get('/proveedores/listarStock', async function (req, res) {
+    connection.query("SELECT * FROM STOCK", function(error, stock, fields) { 
+        console.log("RESP:", stock);
+        res.render('proveedores/listarStock.hbs', { stock });
+    })
+});
 
 ////////////////////////////////////
 // ERROR
@@ -382,8 +444,7 @@ app.get('/error', function (req, res) {
 app.get('/listaPrecios/agregarPrecio', function (req, res) {
     connection.query("SELECT * FROM FORMATO; SELECT * FROM PRESENTACION; SELECT * FROM TIPOMEDIC; SELECT * FROM DESCUENTO; SELECT * FROM MEDICAMENTO;", function(error, respuesta, fields) {  
         if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
-        console.log("Formatos encontrados:", respuesta)
-        
+        console.log("Formatos encontrados:", respuesta);
         data = {
             formatos: respuesta[0],
             presentaciones: respuesta[1],
@@ -391,47 +452,16 @@ app.get('/listaPrecios/agregarPrecio', function (req, res) {
             descuentos: respuesta[3],
             medicamentos: respuesta[4],
         }
-
         res.render('listaPrecios/agregarPrecio.hbs', { data });
-        /*
-        connection.query("SELECT * FROM PRESENTACION", function(error, presentacion, fields) {  
-            if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
-            console.log("Presentaciones encontrados:", presentacion)
-    
-            connection.query("SELECT * FROM MEDICAMENTO", function(error, medicamento, fields) {  
-                if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
-                console.log("Medicamentos encontrados:", medicamento)
-        
-                connection.query("SELECT * FROM DESCUENTO", function(error, descuento, fields) {  
-                    if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
-                    console.log("Descuentos encontrados:", descuento)
-            
-                    connection.query("SELECT * FROM TIPOMEDIC", function(error, tipo, fields) {  
-                        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
-                        console.log("Tipo encontrados:", tipo)
-                
-                        res.render('listaPrecios/agregarPrecio.hbs', { tipo });
-                    })
-                })
-            })
-        })
-        */
     })
 });
 
 //LISTAR PRECIOS [GET]
 app.get('/listaPrecios/listarPrecios', async function (req, res) {
-
-    connection.query("SELECT * FROM TIPOMEDIC; SELECT * FROM PERSONA", function(error, respuesta, fields) { 
-        console.log("RESP:", respuesta);
-        res.render('listaPrecios/listarPrecios.hbs', { respuesta });
+    connection.query("SELECT * LISTAPRECIO", function(error, precios, fields) { 
+        console.log("RESP:", precios);
+        res.render('listaPrecios/listarPrecios.hbs', { precios });
     })
-
-    /*
-    connection.query("SELECT TipoMedic, RutPer from TIPOMEDIC, PERSONA;", function(error, respuesta, fields) { 
-        console.log("RESP;", respuesta);
-        res.render('listaPrecios/listarPrecios.hbs', { respuesta });
-    })*/
 });
 
 ////////////////////////////////////
@@ -441,9 +471,6 @@ app.get('/sucursales/agregarSucur', function (req, res) {
     connection.query("SELECT * FROM MUNICIPIO", function(error, municipios, fields) {
         if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Municipios encontrados:", municipios);
-
-        console.log()
-
         res.render('sucursales/agregarSucur.hbs', { municipios });
     })
 });
@@ -461,7 +488,7 @@ app.post('/sucursales/agregarSucur', function (req, res) {
 // LISTAR SUCUR [GET]
 app.get('/sucursales/listarSucur', function (req, res) {
     connection.query('SELECT * FROM Sucursal', function(error, sucursales, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("The solution is: ", sucursales);
         res.render('sucursales/listarSucur.hbs', { sucursales });
     })
@@ -471,7 +498,7 @@ app.get('/sucursales/listarSucur', function (req, res) {
 app.get('/clientes/editar/:RutPer', function(req, res) {
     let rutPersona = req.params.RutPer;
     connection.query('SELECT * FROM Persona WHERE RutPer = ' + rutPersona, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Encontrado el cliente");
         clienteEncontrado = respuesta[0];
         res.render('personas/clientes/actualizarCliente.hbs', { rut: clienteEncontrado.RutPer, nombre: clienteEncontrado.NomPer });
@@ -481,17 +508,17 @@ app.get('/clientes/editar/:RutPer', function(req, res) {
 // ACTUALIZAR SUCUR [POST]
 app.post('/clientes/editar', function (req, res) {
     connection.query("UPDATE PERSONA SET NomPer = '" + req.body.nombre + "' WHERE RutPer = " + req.body.rut + ";", function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Actualizado el cliente");
         res.redirect('/clientes/listarClientes');
     })
 });
 
-// ELIMINAR SUCUR[GET]
+// ELIMINAR SUCUR [GET]
 app.get('/clientes/eliminar/:RutPer', function(req, res) {
     let rutPersona = req.params.RutPer;
     connection.query('DELETE FROM Persona WHERE RutPer = ' + rutPersona, function(error, respuesta, fields) {
-        if (error) {throw error};
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("Eliminado el cliente");
         res.redirect('/clientes/listarClientes');
     })
