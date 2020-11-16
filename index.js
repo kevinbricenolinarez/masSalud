@@ -324,17 +324,17 @@ app.get('/medicamentos/eliminar/:IdMed', function(req, res) {
 })
 
 
-// PRECIOS ////////////////////////////////////////////////////////////////
-// AGREGAR PRECIO [GET]
-app.get('/precios/agregarPrecio', function (req, res) {
-    res.render('agregarPrecio.hbs');
-});
+// // PRECIOS ////////////////////////////////////////////////////////////////
+// // AGREGAR PRECIO [GET]
+// app.get('/precios/agregarPrecio', function (req, res) {
+//     res.render('agregarPrecio.hbs');
+// });
 
-// LISTAR PRECIOS [GET]
-app.get('/precios/listarPrecios', function (req, res) {
-    let precios = [ { idMedicamento: "01" } ]
-    res.render('listarPrecios.hbs', { precios } );
-});
+// // LISTAR PRECIOS [GET]
+// app.get('/precios/listarPrecios', function (req, res) {
+//     let precios = [ { idMedicamento: "01" } ]
+//     res.render('listarPrecios.hbs', { precios } );
+// });
 
 //////////////////////////////////
 //PROVEEDORES
@@ -458,9 +458,42 @@ app.get('/listaPrecios/agregarPrecio', function (req, res) {
 
 //LISTAR PRECIOS [GET]
 app.get('/listaPrecios/listarPrecios', async function (req, res) {
-    connection.query("SELECT * LISTAPRECIO", function(error, precios, fields) { 
+    connection.query("SELECT * FROM listaprecio", function(error, precios, fields) { 
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
         console.log("RESP:", precios);
         res.render('listaPrecios/listarPrecios.hbs', { precios });
+    })
+});
+
+// ELIMINAR PRECIO 
+app.get('/listaPrecios/eliminar/:IdMed', function(req, res) {
+    let idMeds = req.params.IdMed;
+    connection.query('DELETE FROM LISTAPRECIO WHERE IdMed_l = ' + idMeds, function(error, respuesta, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("Eliminado el precio");
+        res.redirect('/listaPrecios/listarPrecios');
+    })
+})
+
+
+// EDITAR PRECIO [GET]
+app.get('/listaPrecios/editar/:IdMed', function(req, res) {
+    let idMedicamento = req.params.IdMed;
+    connection.query('SELECT * FROM Listaprecio WHERE IdMed_l = ' + idMedicamento, function(error, respuesta, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("Encontrado el precio",respuesta[0]);
+        precioEncontrado = respuesta[0];
+        res.render('listaPrecios/actualizarPrecio.hbs', { IdMed: precioEncontrado.IdMed_l, Precio: precioEncontrado.Precio });
+    })
+})
+
+
+// ACTUALIZAR PRECIO [POST]
+app.post('/listaPrecios/editar', function (req, res) {
+    connection.query("UPDATE Listaprecio SET Precio = '" + req.body.Precio + "' WHERE IdMed_l = " + req.body.IdMed + ";", function(error, respuesta, fields) {
+        if (error) { console.log("FALLO:", error); res.redirect("/error"); return false; };
+        console.log("Actualizado el precio");
+        res.redirect('/listaPrecios/listarPrecios');
     })
 });
 
